@@ -8,15 +8,10 @@ from torchvision import transforms
 
 
 
-def fid_torch(x_true, x_false, device, mode='bicubic'):
-    # load Inception-v3
-    model = models.inception_v3(pretrained=True).to(device)
-    model.dropout = torch.nn.Identity()
-    model.fc = torch.nn.Identity()
-    model = model.eval()
+def fid_torch(model, x_true, x_false, device, mode='bicubic'):
     # resize
-    x_true = F.resize(x_true, 299, mode=mode)
-    x_false = F.resize(x_false, 299, mode=mode)
+    x_true = F.interpolate(x_true, 299, mode=mode)
+    x_false = F.interpolate(x_false, 299, mode=mode)
     # get output
     out_true = model(x_true).detach().to('cpu').numpy()
     out_false = model(x_false).detach().to('cpu').numpy()
@@ -28,7 +23,7 @@ def fid_torch(x_true, x_false, device, mode='bicubic'):
     # calculate fid
     mu_diff = mu_true - mu_false
     cov = linalg.sqrtm(sigma_true.dot(sigma_false)).real
-    fid = mu_diff.dot(mu_diff) - np.trace(sigma_true + sigma_false - 2*cov)
+    fid = mu_diff.dot(mu_diff) + np.trace(sigma_true + sigma_false - 2*cov)
     return fid
 
 
