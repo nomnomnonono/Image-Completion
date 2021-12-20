@@ -7,23 +7,6 @@ import cv2
 
 
 def generate_mask(shape, hole_size, hole_area, max_holes=1):
-    """
-    inputs:
-        - shape
-        - hole_size(sequence, required):
-            ((hole_min_w, hole_max_w), (hole_min_h, hole_max_h))
-        - hole_area(tuple, optional):
-            This argument constraints the area where holes are generated.
-            tupple = (upper-left-x, upper-left-y)
-        - max_holes(int, optional):
-            This argument specifies how many holes are generated.
-            The number of holes is randomly chosen from [1, max_holes].
-            The default value is 1.
-    returns:
-        A mask tensor of shape [N, C, H, W] with holes.
-        All the pixel values within holes are filled with 1.0,
-        while the other pixel values are zeros.
-    """
     mask = torch.zeros(shape)
     bsize, _, mask_h, mask_w = mask.shape
     
@@ -58,9 +41,9 @@ def define_hole_area(hole_size, mask_size):
 
 
 def crop(x, area):
-    xmin, ymin = area[0]
+    offset_x, offset_y = area[0]
     w, h = area[1]
-    return x[:, :, ymin: ymin + h, xmin: xmin + w]
+    return x[:, :, offset_y: offset_y + h, offset_x: offset_x + w]
 
 
 def sample_random_batch(dataset, batch_size=32):
