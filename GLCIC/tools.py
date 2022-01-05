@@ -6,28 +6,58 @@ import cv2
 
 
 
-def generate_mask(shape, hole_size, hole_area, max_holes=1):
+def generate_mask(shape, hole_size, hole_area):
     mask = torch.zeros(shape)
     bsize, _, mask_h, mask_w = mask.shape
     
     for i in range(bsize):
-        # define number of holes
-        n_holes = random.choice(list(range(1, max_holes+1)))
+        # define hole width
+        if isinstance(hole_size[0], tuple) and len(hole_size[0]) == 2:
+            hole_w = random.randint(hole_size[0][0], hole_size[0][1])
+        else:
+            hole_w = hole_size[0]
+
+        # define hole height
+        if isinstance(hole_size[1], tuple) and len(hole_size[1]) == 2:
+            hole_h = random.randint(hole_size[1][0], hole_size[1][1])
+        else:
+            hole_h = hole_size[1]
+        area_xmin, area_ymin = hole_area
+        offset_x = random.randint(area_xmin, area_xmin + mask_w - hole_w)
+        offset_y = random.randint(area_ymin, area_ymin + mask_h - hole_h)
+        mask[i, :, offset_y: offset_y + hole_h, offset_x: offset_x + hole_w] = 1.0
+    return mask
+
+
+def generate_multiple_mask(shape, hole_size, hole_area, n_holes):
+    mask = torch.zeros(shape)
+    bsize, _, mask_h, mask_w = mask.shape
+    limit = mask_w // 6
+    for i in range(bsize):
         for _ in range(n_holes):
             # define hole width
             if isinstance(hole_size[0], tuple) and len(hole_size[0]) == 2:
-                hole_w = random.randint(hole_size[0][0], hole_size[0][1])
+                hole_w = random.randint(hole_size[0][0] / np.sqrt(n_holes), hole_size[0][1] / np.sqrt(n_holes))
             else:
                 hole_w = hole_size[0]
-
             # define hole height
             if isinstance(hole_size[1], tuple) and len(hole_size[1]) == 2:
-                hole_h = random.randint(hole_size[1][0], hole_size[1][1])
+                hole_h = random.randint(hole_size[1][0] / np.sqrt(n_holes), hole_size[1][1] / np.sqrt(n_holes))
             else:
                 hole_h = hole_size[1]
+            # define hole-arae
             area_xmin, area_ymin = hole_area
-            offset_x = random.randint(area_xmin, area_xmin + mask_w - hole_w)
+            offset_x = random.randint(area_xmin, -area_xmin + mask_w - hole_w)
+            if offset_x < limit:
+              offset_x = limit
+            if offset_x > mask_w - limit - hole_w:
+              offset_x = mask_w - limit - hole_w
             offset_y = random.randint(area_ymin, area_ymin + mask_h - hole_h)
+            if offset_y < limit:
+              offset_y = limit
+            if offset_y > mask_h - limit - hole_h:
+              offset_y = mask_h - limit - hole_h
+            # generate loss-area
             mask[i, :, offset_y: offset_y + hole_h, offset_x: offset_x + hole_w] = 1.0
     return mask
 
