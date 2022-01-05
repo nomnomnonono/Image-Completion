@@ -47,7 +47,7 @@ def generate_multiple_mask(shape, hole_size, hole_area, n_holes):
                 hole_h = hole_size[1]
             # define hole-arae
             area_xmin, area_ymin = hole_area
-            offset_x = random.randint(area_xmin, -area_xmin + mask_w - hole_w)
+            offset_x = random.randint(area_xmin, area_xmin + mask_w - hole_w)
             if offset_x < limit:
               offset_x = limit
             if offset_x > mask_w - limit - hole_w:
@@ -59,6 +59,37 @@ def generate_multiple_mask(shape, hole_size, hole_area, n_holes):
               offset_y = mask_h - limit - hole_h
             # generate loss-area
             mask[i, :, offset_y: offset_y + hole_h, offset_x: offset_x + hole_w] = 1.0
+    return mask
+
+
+def generate_circle_mask(shape, radius_range, hole_area, n_holes):
+    # radius_range=(30, 40)
+    mask = np.zeros(shape)
+    bsize, _, mask_h, mask_w = mask.shape
+    limit = mask_w // 6
+    for i in range(bsize):
+        for _ in range(n_holes):
+            # define hole width
+            if isinstance(radius_range, tuple) and len(radius_range) == 2:
+                #hole_w = int(random.randint(hole_size[0][0], hole_size[0][1]) / np.sqrt(n_holes))
+                radius = random.randint(radius_range[0] / np.sqrt(n_holes), radius_range[1] / np.sqrt(n_holes))
+            else:
+                radius = radius_range
+            # define hole-arae
+            area_xmin, area_ymin = hole_area
+            offset_x = random.randint(area_xmin, area_xmin + mask_w - radius)
+            if offset_x < limit:
+              offset_x = limit
+            if offset_x > mask_w - limit - radius:
+              offset_x = mask_w - limit - radius
+            offset_y = random.randint(area_ymin, area_ymin + mask_h - radius)
+            if offset_y < limit:
+              offset_y = limit
+            if offset_y > mask_h - limit - radius:
+              offset_y = mask_h - limit - radius
+            # generate loss-area
+            cv2.circle(mask[i, 0, :, :], (offset_x, offset_y), radius, 1, thickness=-1)
+    mask = torch.from_numpy(mask)
     return mask
 
 
