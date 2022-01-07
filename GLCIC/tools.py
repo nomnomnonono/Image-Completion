@@ -37,22 +37,22 @@ def generate_multiple_mask(shape, hole_size, hole_area, n_holes):
         for _ in range(n_holes):
             # define hole width
             if isinstance(hole_size[0], tuple) and len(hole_size[0]) == 2:
-                hole_w = random.randint(hole_size[0][0] / np.sqrt(n_holes), hole_size[0][1] / np.sqrt(n_holes))
+                hole_w = random.randint(hole_size[0][0] // np.sqrt(n_holes), hole_size[0][1] // np.sqrt(n_holes))
             else:
                 hole_w = hole_size[0]
             # define hole height
             if isinstance(hole_size[1], tuple) and len(hole_size[1]) == 2:
-                hole_h = random.randint(hole_size[1][0] / np.sqrt(n_holes), hole_size[1][1] / np.sqrt(n_holes))
+                hole_h = random.randint(hole_size[1][0] // np.sqrt(n_holes), hole_size[1][1] // np.sqrt(n_holes))
             else:
                 hole_h = hole_size[1]
             # define hole-arae
             area_xmin, area_ymin = hole_area
-            offset_x = random.randint(area_xmin, area_xmin + mask_w - hole_w)
+            offset_x = random.randint(area_xmin, area_xmin + hole_w)
             if offset_x < limit:
               offset_x = limit
             if offset_x > mask_w - limit - hole_w:
               offset_x = mask_w - limit - hole_w
-            offset_y = random.randint(area_ymin, area_ymin + mask_h - hole_h)
+            offset_y = random.randint(area_ymin, area_ymin + hole_h)
             if offset_y < limit:
               offset_y = limit
             if offset_y > mask_h - limit - hole_h:
@@ -63,7 +63,6 @@ def generate_multiple_mask(shape, hole_size, hole_area, n_holes):
 
 
 def generate_circle_mask(shape, radius_range, hole_area, n_holes):
-    # radius_range=(30, 40)
     mask = np.zeros(shape)
     bsize, _, mask_h, mask_w = mask.shape
     limit = mask_w // 6
@@ -71,18 +70,17 @@ def generate_circle_mask(shape, radius_range, hole_area, n_holes):
         for _ in range(n_holes):
             # define hole width
             if isinstance(radius_range, tuple) and len(radius_range) == 2:
-                #hole_w = int(random.randint(hole_size[0][0], hole_size[0][1]) / np.sqrt(n_holes))
-                radius = random.randint(radius_range[0] / np.sqrt(n_holes), radius_range[1] / np.sqrt(n_holes))
+                radius = random.randint(radius_range[0] // np.sqrt(n_holes), radius_range[1] // np.sqrt(n_holes))
             else:
                 radius = radius_range
             # define hole-arae
             area_xmin, area_ymin = hole_area
-            offset_x = random.randint(area_xmin, area_xmin + mask_w - radius)
+            offset_x = random.randint(area_xmin, area_xmin + radius*3)
             if offset_x < limit:
               offset_x = limit
             if offset_x > mask_w - limit - radius:
               offset_x = mask_w - limit - radius
-            offset_y = random.randint(area_ymin, area_ymin + mask_h - radius)
+            offset_y = random.randint(area_ymin, area_ymin + radius*3)
             if offset_y < limit:
               offset_y = limit
             if offset_y > mask_h - limit - radius:
