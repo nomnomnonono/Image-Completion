@@ -47,12 +47,12 @@ def generate_multiple_mask(shape, hole_size, hole_area, n_holes):
                 hole_h = hole_size[1]
             # define hole-arae
             area_xmin, area_ymin = hole_area
-            offset_x = random.randint(area_xmin, area_xmin + hole_w)
+            offset_x = random.randint(area_xmin, area_xmin + hole_size[0][1] - hole_w)
             if offset_x < limit:
               offset_x = limit
             if offset_x > mask_w - limit - hole_w:
               offset_x = mask_w - limit - hole_w
-            offset_y = random.randint(area_ymin, area_ymin + hole_h)
+            offset_y = random.randint(area_ymin, area_ymin + hole_size[1][1] - hole_h)
             if offset_y < limit:
               offset_y = limit
             if offset_y > mask_h - limit - hole_h:
@@ -75,18 +75,18 @@ def generate_circle_mask(shape, radius_range, hole_area, n_holes):
                 radius = radius_range
             # define hole-arae
             area_xmin, area_ymin = hole_area
-            offset_x = random.randint(area_xmin, area_xmin + radius*3)
+            offset_x = random.randint(area_xmin, area_xmin + (radius_range[1] - radius)*2)
             if offset_x < limit:
               offset_x = limit
             if offset_x > mask_w - limit - radius:
               offset_x = mask_w - limit - radius
-            offset_y = random.randint(area_ymin, area_ymin + radius*3)
+            offset_y = random.randint(area_ymin, area_ymin + (radius_range[1] - radius)*2)
             if offset_y < limit:
               offset_y = limit
             if offset_y > mask_h - limit - radius:
               offset_y = mask_h - limit - radius
             # generate loss-area
-            cv2.circle(mask[i, 0, :, :], (offset_x, offset_y), radius, 1, thickness=-1)
+            cv2.circle(mask[i, 0, :, :], (offset_x+radius, offset_y+radius), radius, 1, thickness=-1)
     mask = torch.from_numpy(mask)
     return mask
 
@@ -97,6 +97,13 @@ def define_hole_area(hole_size, mask_size):
     offset_x = random.randint(0, mask_w - hole_w)
     offset_y = random.randint(0, mask_h - hole_h)
     return ((offset_x, offset_y), (hole_w, hole_h))
+
+
+def define_circle_area(radius, mask_size):
+    mask_w, mask_h = mask_size
+    offset_x = random.randint(0, mask_w - radius*2)
+    offset_y = random.randint(0, mask_h - radius*2)
+    return ((offset_x, offset_y), (radius*2, radius*2))
 
 
 def crop(x, area):
