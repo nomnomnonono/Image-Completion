@@ -99,13 +99,6 @@ def define_hole_area(hole_size, mask_size):
     return ((offset_x, offset_y), (hole_w, hole_h))
 
 
-def define_circle_area(radius, mask_size):
-    mask_w, mask_h = mask_size
-    offset_x = random.randint(0, mask_w - radius*2)
-    offset_y = random.randint(0, mask_h - radius*2)
-    return ((offset_x, offset_y), (radius*2, radius*2))
-
-
 def crop(x, area):
     offset_x, offset_y = area[0]
     w, h = area[1]
